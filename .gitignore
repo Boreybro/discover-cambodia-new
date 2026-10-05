@@ -1,0 +1,5 @@
+.env
+storage/*
+!storage/.htaccess
+!storage/.gitkeep
+public/uploads/guide_apply/

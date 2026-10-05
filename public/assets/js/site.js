@@ -26,10 +26,11 @@ const topnav = $('#topnav');
 const onScroll = () => topnav && topnav.classList.toggle('shrunk', window.scrollY > 40);
 onScroll(); addEventListener('scroll', onScroll, { passive: true });
 
-/* reveal on scroll */
-const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .12, rootMargin: '0px 0px -40px 0px' }) : null;
+/* reveal on scroll — with a safety net so nothing stays hidden */
+const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .05, rootMargin: '0px 0px -20px 0px' }) : null;
 const observeReveal = (root = document) => { if (!io) return; $$('.reveal', root).forEach(el => io.observe(el)); };
 observeReveal();
+setTimeout(() => $$('.reveal:not(.in)').forEach(el => el.classList.add('in')), 2500);
 
 /* hero stat count-up */
 const counters = $$('.stats b[data-count]');

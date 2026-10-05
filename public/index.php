@@ -76,6 +76,19 @@ nav();
   </div>
 </div></section>
 
+<?php if ($top): ?>
+<section class="section reveal" id="featured">
+  <div class="wrap">
+    <p class="label upper"><?= e(t('must')) ?></p>
+    <h2 class="sec-title"><?= e(t('top_a')) ?> <em><?= e(t('top_b')) ?></em></h2>
+  </div>
+  <?php $set = $top; while (count($set) < 8) $set = array_merge($set, $top); $seen = []; ?>
+  <div class="marquee"><div class="mtrack" style="--dur:<?= count($set) * 8 ?>s">
+    <?php for ($c = 0; $c < 3; $c++) foreach ($set as $p): ?><div class="mitem"><?php place_card($p, $c === 0 && !isset($seen[$p['id']]) && ($seen[$p['id']] = 1)); ?></div><?php endforeach ?>
+  </div></div>
+</section>
+<?php endif ?>
+
 <section class="section reveal" id="provinces"><div class="wrap">
   <p class="label upper"><?= e(t('all_prov')) ?></p>
   <h2 class="sec-title"><?= e(t('choose_a')) ?> <em><?= e(t('choose_b')) ?></em></h2>
@@ -94,19 +107,6 @@ nav();
     </div>
   <?php endforeach ?>
 </div></section>
-
-<?php if ($top): ?>
-<section class="section reveal" id="featured">
-  <div class="wrap">
-    <p class="label upper"><?= e(t('must')) ?></p>
-    <h2 class="sec-title"><?= e(t('top_a')) ?> <em><?= e(t('top_b')) ?></em></h2>
-  </div>
-  <?php $set = $top; while (count($set) < 8) $set = array_merge($set, $top); $seen = []; ?>
-  <div class="marquee"><div class="mtrack" style="--dur:<?= count($set) * 6 ?>s">
-    <?php foreach ([0, 1] as $copy) foreach ($set as $p): ?><div class="mitem"><?php place_card($p, $copy === 0 && !isset($seen[$p['id']]) && ($seen[$p['id']] = 1)); ?></div><?php endforeach ?>
-  </div></div>
-</section>
-<?php endif ?>
 
 <section class="section reveal" id="all-places"><div class="wrap">
   <p class="label upper"><?= e(t('explore_all')) ?></p>

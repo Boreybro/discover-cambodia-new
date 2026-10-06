@@ -9,18 +9,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     check_csrf();
     $name = trim((string)($_POST['name'] ?? '')); $info = trim((string)($_POST['info'] ?? '')); $msg = trim((string)($_POST['message'] ?? ''));
     $ip = client_ip();
-    if (($_POST['website'] ?? '') !== '') { $done = true; }                                  // hidden spam trap
+    if (($_POST['website'] ?? '') !== '') { $done = true; }
     elseif (too_many_fails('contact', $ip, 5, 60)) $err = 'Too many messages. Please try again later.';
     elseif ($name === '' || $info === '' || mb_strlen($msg) < 3) $err = 'Please fill in your name, how to reach you, and a message.';
     else {
         q('insert into contact_messages (name,contact,message) values (?,?,?)', [mb_substr($name, 0, 120), mb_substr($info, 0, 160), mb_substr($msg, 0, 3000)]);
-        note_fail('contact', $ip);                                                           // counts toward the hourly limit
+        note_fail('contact', $ip);
         $done = true;
     }
 }
 page_head(t('contact_title') . ' — Discover Cambodia');
 nav(); ?>
 <main class="wrap section" style="max-width:760px">
+  <?php xbtn(); ?>
   <p class="label upper"><?= e(t('contact')) ?></p>
   <h2 class="sec-title"><?= e(t('contact_title')) ?></h2>
   <p class="muted" style="margin-bottom:18px"><?= e(t('contact_text')) ?></p>

@@ -13,26 +13,23 @@ const needLogin = () => location.href = `${C.base}/login.php?next=${encodeURICom
 const lines = s => String(s || '').split(/\n|\|/).map(x => x.trim()).filter(Boolean);
 const fmt = n => { n = +n || 0; return n >= 1e6 ? (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M' : n >= 1e3 ? (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'K' : String(n); };
 const eye = n => n != null ? `<span class="tag">👁 ${fmt(n)}</span>` : '';
+const clipN = () => innerWidth <= 640 ? 2 : innerWidth <= 1024 ? 3 : innerWidth < 1700 ? 4 : innerWidth < 2200 ? 5 : 6;
 
-/* theme, burger */
 $('#theme')?.addEventListener('click', () => { const l = document.body.classList.toggle('theme-light'); localStorage.theme = l ? 'light' : 'dark'; });
 const panel = $('#navpanel'), burger = $('#burger');
 const closePanel = () => { panel?.classList.remove('open'); if (burger) { burger.textContent = '☰'; burger.setAttribute('aria-expanded', 'false'); } };
 burger?.addEventListener('click', e => { e.stopPropagation(); const o = panel.classList.toggle('open'); burger.textContent = o ? '✕' : '☰'; burger.setAttribute('aria-expanded', String(o)); });
 panel?.addEventListener('click', e => { if (e.target.closest('.links a')) closePanel(); });
 
-/* nav shrink on scroll */
 const topnav = $('#topnav');
 const onScroll = () => topnav && topnav.classList.toggle('shrunk', window.scrollY > 40);
 onScroll(); addEventListener('scroll', onScroll, { passive: true });
 
-/* reveal on scroll — with a safety net so nothing stays hidden */
 const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .05, rootMargin: '0px 0px -20px 0px' }) : null;
 const observeReveal = (root = document) => { if (!io) return; $$('.reveal', root).forEach(el => io.observe(el)); };
 observeReveal();
 setTimeout(() => $$('.reveal:not(.in)').forEach(el => el.classList.add('in')), 2500);
 
-/* hero stat count-up */
 const counters = $$('.stats b[data-count]');
 if (counters.length && 'IntersectionObserver' in window) {
   const co = new IntersectionObserver(es => es.forEach(e => { if (!e.isIntersecting) return;
@@ -190,7 +187,8 @@ document.addEventListener('click', async e => {
     if (clip && clip.classList.contains('clip')) {
       const open = clip.classList.toggle('open');
       const total = clip.children.length;
-      clipBtn.textContent = open ? (T.show_less || 'Show less') : (T.show_more || 'Show more') + ' (' + Math.max(0, total - 2) + ')';
+      const n = clipN();
+      clipBtn.textContent = open ? (T.show_less || 'Show less') : (T.show_more || 'Show more') + ' (' + Math.max(0, total - n) + ')';
     }
     return;
   }

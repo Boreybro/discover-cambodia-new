@@ -13,9 +13,8 @@ $tbl = '"' . $r['table'] . '"';
 $self = u('admin/crud.php?r=' . $slug);
 $ro = !empty($r['readonly']);
 $flash = $_SESSION['flash'] ?? ''; unset($_SESSION['flash']);
-$formRow = null; // set when a save failed, so the form keeps what was typed
+$formRow = null;
 
-/** Build "a|b|c" from the picture slots: kept paths + new uploads, minus removed ones. */
 function collect_images(array $f, string $table): ?string {
     $k = $f['key']; $paths = $_POST[$k . '_path'] ?? []; $del = $_POST[$k . '_del'] ?? []; $files = $_FILES[$k . '_file'] ?? null; $out = [];
     foreach ($paths as $i => $p) {
@@ -36,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$ro) {
     $act = $_POST['act'] ?? '';
     $pkval = (string)($_POST['_pk'] ?? '');
 
-    if ($act === 'quick') {                       // change a status / tick box straight from the list (no page reload)
+    if ($act === 'quick') {
         $f = null; foreach ($r['fields'] as $x) if ($x['key'] === ($_POST['field'] ?? '')) $f = $x;
         $type = $f['type'] ?? 'text'; $val = (string)($_POST['value'] ?? '');
         if (!$f || !empty($f['createOnly']) || !in_array($type, ['select', 'flag'], true) || isset($f['ref'])) json_out(['ok' => false, 'error' => 'Not allowed'], 400);
@@ -53,11 +52,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$ro) {
         } elseif ($act === 'save') {
             $isNew = $pkval === '';
             if ($isNew && !empty($r['noCreate'])) exit('Not allowed');
-            foreach ($r['fields'] as $f) {                                   // required fields first (before any upload)
+            foreach ($r['fields'] as $f) {
                 $t = $f['type'] ?? 'text';
                 if (!empty($f['req']) && ($isNew || empty($f['createOnly'])) && !in_array($t, ['flag', 'images'], true) && trim((string)($_POST[$f['key']] ?? '')) === '')
                     throw new RuntimeException($f['label'] . ' is required.');
             }
+            if ($isNew && !empty($r['keyPrefix']) && !str_starts_with(trim((string)($_POST[$pk] ?? '')), $r['keyPrefix'])) throw new RuntimeException('The name must start with ' . $r['keyPrefix']);
             $cols = []; $vals = [];
             foreach ($r['fields'] as $f) {
                 $k = $f['key']; $type = $f['type'] ?? 'text';
@@ -66,13 +66,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$ro) {
                     $v = collect_images($f, $r['table']);
                     if ($isNew && $v === null) continue;
                     $cols[] = $k; $vals[] = $v;
-                    if (!empty($f['sync'])) { $cols[] = $f['sync']; $vals[] = $v === null ? null : explode('|', $v)[0]; } // keep the single "main image" column = Img 1
+                    if (!empty($f['sync'])) { $cols[] = $f['sync']; $vals[] = $v === null ? null : explode('|', $v)[0]; }
                     continue;
                 }
                 if ($type === 'flag') $v = isset($_POST[$k]) ? 1 : 0;
                 else {
                     $v = trim((string)($_POST[$k] ?? ''));
-                    if ($v === '') { if ($isNew) continue; $v = null; }      // empty on insert = use the DB default
+                    if ($v === '') { if ($isNew) continue; $v = null; }
                     elseif ($type === 'number' || isset($f['ref'])) $v = $v + 0;
                 }
                 $cols[] = $k; $vals[] = $v;
@@ -93,7 +93,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$ro) {
     }
 }
 
-/* data for dropdowns */
 $refs = [];
 foreach ($r['fields'] as $f) if (isset($f['ref']))
     $refs[$f['key']] = array_column(rows('select id, "' . $f['ref'][1] . '" as label from "' . $f['ref'][0] . '" order by 2 limit 1000'), 'label', 'id');
@@ -144,7 +143,7 @@ admin_head($r['title'], $slug);
       <?php elseif ($type === 'date'): ?><input type="date" name="<?= e($k) ?>" value="<?= e(substr((string)$v, 0, 10)) ?>" <?= $reqA ?>>
       <?php elseif ($type === 'select'): ?><select name="<?= e($k) ?>" <?= $dis ?> <?= $reqA ?>><option value="">—</option>
           <?php if (isset($f['ref'])) foreach ($refs[$k] as $id => $lab): ?><option value="<?= e($id) ?>" <?= (string)$v === (string)$id ? 'selected' : '' ?>><?= e($lab) ?></option><?php endforeach ?>
-          <?php $opts = $f['options'] ?? []; if (!isset($f['ref']) && $v !== '' && !in_array((string)$v, $opts, true)) $opts[] = (string)$v; // keep an old value that is not in the list
+          <?php $opts = $f['options'] ?? []; if (!isset($f['ref']) && $v !== '' && !in_array((string)$v, $opts, true)) $opts[] = (string)$v;
                 foreach ($opts as $o): ?><option <?= (string)$v === $o ? 'selected' : '' ?>><?= e($o) ?></option><?php endforeach ?></select>
       <?php else: ?><input name="<?= e($k) ?>" type="<?= $type === 'number' ? 'number' : 'text' ?>" step="any" value="<?= e($v) ?>" <?= $dis ?> <?= $reqA ?>>
       <?php endif ?>
@@ -163,7 +162,7 @@ admin_head($r['title'], $slug);
   </script>
 <?php else:
     $dir = !empty($r['desc']) ? 'desc' : 'asc';
-    $data = rows($r['select'] ?? "select * from $tbl order by \"" . ($r['order'] ?? $pk) . "\" $dir limit 1000");
+    $data = rows($r['select'] ?? ("select * from $tbl" . (!empty($r['where']) ? ' where ' . $r['where'] : '') . " order by \"" . ($r['order'] ?? $pk) . "\" $dir limit 1000"));
     $cols = array_values(array_filter($r['fields'], fn($f) => !empty($f['list']))); ?>
   <div class="adm-table"><table id="tbl"><thead><tr><?php foreach ($cols as $c): ?><th><?= e($c['label']) ?></th><?php endforeach ?><?php if (!$ro): ?><th></th><?php endif ?></tr></thead><tbody>
   <?php foreach ($data as $d): ?><tr data-id="<?= e($d[$pk] . ($d['item_type'] ?? '')) ?>">
@@ -175,7 +174,9 @@ admin_head($r['title'], $slug);
         <select class="qs" data-quick="<?= e($c['key']) ?>" data-pk="<?= e($d[$pk]) ?>" data-prev="<?= e($v) ?>"><?php foreach ($opts as $o): ?><option <?= (string)$v === $o ? 'selected' : '' ?>><?= e($o) ?></option><?php endforeach ?></select>
       <?php else:
           if (isset($c['ref'])) $v = $refs[$c['key']][$v] ?? $v; elseif ($t === 'flag') $v = $v ? '✓' : '—'; ?>
-        <?= e(mb_strimwidth((string)$v, 0, 48, '…')) ?>
+        <?php if (is_string($v) && str_starts_with($v, 'private:')): ?><a href="<?= u('admin/file.php?f=' . urlencode(substr($v, 8))) ?>" target="_blank">Open receipt ↗</a>
+        <?php else: ?><?= e(mb_strimwidth((string)$v, 0, 48, '…')) ?>
+        <?php endif ?>
       <?php endif ?>
       </td>
     <?php endforeach ?>
@@ -189,7 +190,6 @@ admin_head($r['title'], $slug);
     function applyFilter() { var q = flt.value.toLowerCase(); document.querySelectorAll('#tbl tbody tr').forEach(function (r) { r.hidden = q && r.textContent.toLowerCase().indexOf(q) < 0; }); }
     flt.addEventListener('input', applyFilter);
 
-    // coming back from Edit / Add / Delete: same filter, same scroll position (not the top)
     history.scrollRestoration = 'manual';
     var saved = sessionStorage.getItem(key);
     if (saved) { try { var o = JSON.parse(saved); flt.value = o.f || ''; applyFilter(); window.scrollTo(0, o.y || 0); } catch (e) {} sessionStorage.removeItem(key); }
@@ -198,7 +198,6 @@ admin_head($r['title'], $slug);
     document.addEventListener('submit', function (e) { if (e.target.closest('.adm-act')) remember(); });
     <?php if ($flash): ?>if (window.toast) toast(<?= json_encode($flash) ?>);<?php endif ?>
 
-    // change a status / tick box right in the list: saves instantly, page does not move
     document.addEventListener('change', function (e) {
       var el = e.target.closest('[data-quick]'); if (!el) return;
       var box = el.type === 'checkbox', fd = new FormData(), tr = el.closest('tr');
@@ -212,7 +211,6 @@ admin_head($r['title'], $slug);
       }).catch(function () { undo('Network error'); });
     });
 
-    // live refresh: new rows / changed rows appear by themselves, nothing jumps
     var busy = false;
     function ids(root) { return [].map.call(root.querySelectorAll('tr[data-id]'), function (r) { return r.dataset.id; }); }
     setInterval(function () {

@@ -41,7 +41,7 @@ page_head('Payment — Discover Cambodia'); nav(); ?>
       <p class="muted">Balance later: $<?= number_format((float)$b['balance_usd'], 2) ?></p>
       <p>Status: <b><?= e($labels[$b['payment_status']] ?? $b['payment_status']) ?></b> · Booking: <b class="upper"><?= e($b['booking_status']) ?></b></p>
       <?php if ($b['payment_due_at'] && in_array($b['payment_status'], ['pending', 'unpaid'], true)): ?><p class="muted">Please pay before <?= e(substr((string)$b['payment_due_at'], 0, 16)) ?>.</p><?php endif ?>
-      <h4>How to pay</h4><p><?= nl2br(e($info)) ?></p><p>Reference to write in the transfer: <b><?= e($b['reference']) ?></b></p>
+      <h4>How to pay</h4><p><?= nl2br(e($info)) ?></p><p>Reference to write in the transfer: <b><?= e($b['reference']) ?></b></p><?php qr_block($qrs); ?>
     </div>
     <div class="panelbox">
       <?php if (in_array($b['payment_status'], $open, true)): ?>

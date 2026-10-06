@@ -114,6 +114,6 @@ function qr_rows(): array { return rows("select key,value from app_settings wher
 function qr_block(array $qrs): void {
     if (!$qrs) return;
     echo '<div class="qrs">';
-    foreach ($qrs as $qr) echo '<figure><img src="' . e(img(explode('|', (string)$qr['value'])[0])) . '" alt="QR"><figcaption>' . e(ucwords(str_replace('_', ' ', substr($qr['key'], 3)))) . '</figcaption></figure>';
+    foreach ($qrs as $qr) echo '<figure><img src="' . e(img(explode('|', (string)$qr['value'])[0])) . '" alt="QR"><figcaption>' . e(strtoupper(str_replace('_', ' ', substr($qr['key'], 3)))) . '</figcaption></figure>';
     echo '</div>';
 }

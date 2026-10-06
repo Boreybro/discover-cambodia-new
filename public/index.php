@@ -81,7 +81,8 @@ nav();
   <div class="wrap">
     <p class="label upper"><?= e(t('must')) ?></p>
     <h2 class="sec-title"><?= e(t('top_a')) ?> <em><?= e(t('top_b')) ?></em></h2>
-    <div class="grid"><?php foreach ($top as $p) place_card($p); ?></div>
+    <div class="clip grid" data-clip><?php foreach ($top as $p) place_card($p); ?></div>
+    <?php if (count($top) > 2): ?><button type="button" class="clip-more upper" data-clip-btn><?= e(t('show_more')) ?> (<?= count($top) - 2 ?>)</button><?php endif ?>
   </div>
 </section>
 <?php endif ?>
@@ -91,7 +92,7 @@ nav();
   <h2 class="sec-title"><?= e(t('choose_a')) ?> <em><?= e(t('choose_b')) ?></em></h2>
   <?php foreach ($regions as $region => $list): ?>
     <p class="region upper"><?= e($region) ?></p>
-    <div class="grid">
+    <div class="clip grid" data-clip>
     <?php foreach ($list as $pv): $c = $pv['cover_color'] ?: '#7A3B10'; ?>
       <div class="card reveal" data-prov="<?= e($pv['slug']) ?>" style="background:linear-gradient(160deg,<?= e($c) ?> 0%,<?= e($c) ?>cc 100%)">
         <div class="skeleton"></div>
@@ -102,6 +103,7 @@ nav();
       </div>
     <?php endforeach ?>
     </div>
+    <?php if (count($list) > 2): ?><button type="button" class="clip-more upper" data-clip-btn><?= e(t('show_more')) ?> (<?= count($list) - 2 ?>)</button><?php endif ?>
   <?php endforeach ?>
 </div></section>
 
@@ -111,8 +113,8 @@ nav();
   <?php foreach ($provinces as $pv) if (!empty($byProv[$pv['id']])): ?>
     <div class="pgroup">
       <p class="region upper"><?= e(pick($pv)) ?> · <?= count($byProv[$pv['id']]) ?></p>
-      <div class="grid"><?php foreach ($byProv[$pv['id']] as $p) place_card($p); ?></div>
-      <button class="more upper" hidden></button>
+      <div class="clip grid" data-clip><?php foreach ($byProv[$pv['id']] as $p) place_card($p); ?></div>
+      <?php if (count($byProv[$pv['id']]) > 2): ?><button type="button" class="clip-more upper" data-clip-btn><?= e(t('show_more')) ?> (<?= count($byProv[$pv['id']]) - 2 ?>)</button><?php endif ?>
     </div>
   <?php endif ?>
 </div></section>
@@ -121,7 +123,7 @@ nav();
 <section class="section reveal" id="festivals"><div class="wrap">
   <p class="label upper"><?= e(t('fest_label')) ?></p>
   <h2 class="sec-title"><?= e(t('fest_a')) ?> <em><?= e(t('fest_b')) ?></em></h2>
-  <div class="grid fest">
+  <div class="clip grid fest" data-clip>
   <?php foreach ($fests as $f): ?>
     <div class="fcard reveal" <?= $f['place_id'] ? 'data-place="' . (int)$f['place_id'] . '"' : '' ?> style="border-top:3px solid <?= e($f['accent_color'] ?: 'var(--gold)') ?>;<?= $f['place_id'] ? 'cursor:pointer' : '' ?>">
       <span class="ficon"><?= e($f['icon']) ?></span><b><?= e($f['name_en']) ?></b><span><?= e($f['name_kh']) ?></span>
@@ -130,6 +132,7 @@ nav();
     </div>
   <?php endforeach ?>
   </div>
+  <?php if (count($fests) > 2): ?><button type="button" class="clip-more upper" data-clip-btn><?= e(t('show_more')) ?> (<?= count($fests) - 2 ?>)</button><?php endif ?>
 </div></section>
 <?php endif ?>
 

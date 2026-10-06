@@ -70,17 +70,6 @@ if (sp.length > 1) {
   setInterval(() => { if (!hover && !document.hidden) go(k + 1); }, 4500);
 }
 
-function fit() {
-  const n = innerWidth <= 640 ? 2 : innerWidth <= 1024 ? 3 : innerWidth < 1700 ? 4 : 5;
-  $$('.pgroup').forEach(g => {
-    const cards = $$('.card', g), open = g.classList.contains('open');
-    cards.forEach((c, i) => c.hidden = !open && i >= n);
-    const b = $('.more', g); b.hidden = cards.length <= n;
-    b.textContent = open ? T.show_less : `${T.show_more} (${cards.length - n})`;
-  });
-}
-fit(); addEventListener('resize', fit);
-
 let st; const q = $('#q'), qres = $('#qres');
 q?.addEventListener('input', () => { clearTimeout(st); st = setTimeout(async () => {
   if (q.value.trim().length < 2) return qres.hidden = true;
@@ -196,10 +185,18 @@ document.addEventListener('click', async e => {
   if (!t.closest('.search')) qres && (qres.hidden = true);
   if (!t.closest('#notes') && !t.closest('#bell')) notes && (notes.hidden = true);
   if (t === modal || t.closest('[data-close]')) return close();
+  const clipBtn = t.closest('[data-clip-btn]'); if (clipBtn) {
+    const clip = clipBtn.previousElementSibling;
+    if (clip && clip.classList.contains('clip')) {
+      const open = clip.classList.toggle('open');
+      const total = clip.children.length;
+      clipBtn.textContent = open ? (T.show_less || 'Show less') : (T.show_more || 'Show more') + ' (' + Math.max(0, total - 2) + ')';
+    }
+    return;
+  }
   const bot = t.closest('[data-bot]'); if (bot) return botAct(bot.dataset.bot, bot.dataset.arg, bot.textContent);
   const pl = t.closest('[data-place]'); if (pl) { qres && (qres.hidden = true); return openPlace(pl.dataset.place); }
   const pr = t.closest('[data-prov]'); if (pr && pr.dataset.prov) { qres && (qres.hidden = true); return openProvince(pr.dataset.prov); }
-  const more = t.closest('.pgroup .more'); if (more) { more.closest('.pgroup').classList.toggle('open'); return fit(); }
   const mm = t.closest('[data-more]'); if (mm) { const l = mm.previousElementSibling; l.classList.toggle('open'); mm.textContent = l.classList.contains('open') ? T.show_less : T.show_more; return; }
   const tab = t.closest('[data-tab]'); if (tab) { $$('[data-tab]', sheet).forEach(b => b.classList.toggle('on', b === tab)); $$('.pane', sheet).forEach(p => p.hidden = p.dataset.pane !== tab.dataset.tab); return; }
   const ch = t.closest('[data-chip]'); if (ch) { const box = ch.closest('.pane'); $$('[data-chip]', box).forEach(b => b.classList.toggle('on', b === ch)); $$('.row2', box).forEach(r => r.hidden = ch.dataset.chip && r.dataset.type !== ch.dataset.chip); return; }

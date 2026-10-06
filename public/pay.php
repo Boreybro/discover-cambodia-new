@@ -16,6 +16,7 @@ $b = $load();
 if (!$b) redirect(u('profile.php'));
 $open = $type === 'reservation' ? ['unpaid', 'pending_review'] : ['pending', 'pending_review'];
 $info = (string)val("select value from app_settings where key='payment_info'");
+$qrs = qr_rows();
 $msg = $err = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && in_array($b['payment_status'], $open, true)) {
@@ -32,6 +33,7 @@ $labels = ['pending' => 'Waiting for deposit', 'unpaid' => 'Waiting for deposit'
            'paid' => 'Paid ✓', 'fully_paid' => 'Fully paid ✓', 'not_due' => 'No deposit needed', 'refunded' => 'Refunded', 'expired' => 'Expired'];
 page_head('Payment — Discover Cambodia'); nav(); ?>
 <main class="wrap section">
+  <?php xbtn(); ?>
   <p class="label upper">Booking <?= e($b['reference']) ?></p>
   <h2 class="sec-title">Pay your deposit</h2>
   <div class="two">

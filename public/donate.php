@@ -3,6 +3,7 @@ require __DIR__ . '/../src/bootstrap.php';
 require ROOT . '/src/view.php';
 $me = user();
 $info = (string)val("select value from app_settings where key='payment_info'");
+$qrs = qr_rows();
 $err = ''; $done = false;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     check_csrf();
@@ -15,11 +16,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 page_head('Donate — Discover Cambodia'); nav(); ?>
-<main class="wrap section" style="max-width:640px">
+<main class="wrap section center narrow">
+  <?php xbtn(); ?>
   <p class="label upper">Support us</p>
   <h2 class="sec-title"><?= e(t('donate_t')) ?></h2>
   <?php if ($done): ?>
-    <div class="panelbox"><h3>Thank you! 🙏</h3><p>Your pledge is saved. Please send it using the details below — we mark it as received once we see it.</p><p><?= nl2br(e($info)) ?></p><a class="chip" href="<?= u('index.php') ?>">← Home</a></div>
+    <div class="panelbox"><h3>Thank you! 🙏</h3><p>Your pledge is saved. Please send it using the details below — we mark it as received once we see it.</p><p><?= nl2br(e($info)) ?></p><?php qr_block($qrs); ?><a class="chip" href="<?= u('index.php') ?>">← Home</a></div>
   <?php else: ?>
     <form method="post" class="panelbox"><input type="hidden" name="csrf" value="<?= e(csrf()) ?>">
       <label>Amount (USD) *<input type="number" name="amount_usd" min="1" step="1" required value="<?= e($_POST['amount_usd'] ?? '5') ?>"></label>
@@ -28,6 +30,7 @@ page_head('Donate — Discover Cambodia'); nav(); ?>
       <?php if ($err): ?><p class="err"><?= e($err) ?></p><?php endif ?>
       <button class="btn-gold upper"><?= e(t('donate_b')) ?></button>
     </form>
+    <?php qr_block($qrs); ?>
   <?php endif ?>
 </main>
 <?php page_foot();

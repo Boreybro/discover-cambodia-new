@@ -81,11 +81,8 @@ nav();
   <div class="wrap">
     <p class="label upper"><?= e(t('must')) ?></p>
     <h2 class="sec-title"><?= e(t('top_a')) ?> <em><?= e(t('top_b')) ?></em></h2>
+    <div class="grid"><?php foreach ($top as $p) place_card($p); ?></div>
   </div>
-  <?php $set = $top; while (count($set) < 8) $set = array_merge($set, $top); $seen = []; ?>
-  <div class="marquee"><div class="mtrack" style="--dur:<?= count($set) * 8 ?>s">
-    <?php for ($c = 0; $c < 3; $c++) foreach ($set as $p): ?><div class="mitem"><?php place_card($p, $c === 0 && !isset($seen[$p['id']]) && ($seen[$p['id']] = 1)); ?></div><?php endforeach ?>
-  </div></div>
 </section>
 <?php endif ?>
 

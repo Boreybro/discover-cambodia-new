@@ -97,11 +97,13 @@ function admin_resources(): array {
         'select' => "select v.item_type, v.item_id, v.views, coalesce(p.name_en, h.name, r.restaurant_name_en) as name from item_views v left join places p on v.item_type='place' and p.id=v.item_id left join hotels h on v.item_type='hotel' and h.id=v.item_id left join place_restaurants r on v.item_type='restaurant' and r.id=v.item_id order by v.views desc limit 200",
         'fields' => [$T('name', 'Name', true), $T('item_type', 'Type', true), $N('views', 'Views', true)]],
       'stats' => ['title' => 'Visitor stats', 'group' => 'Promotion', 'table' => 'site_stats', 'pk' => 'name', 'order' => 'name', 'readonly' => true, 'fields' => [$T('name', 'Event', true), $N('count', 'Count', true)]],
+      'qr' => ['title' => 'Bank QR codes', 'group' => 'Settings', 'table' => 'app_settings', 'pk' => 'key', 'where' => "key like 'qr\\_%'", 'keyPrefix' => 'qr_', 'fields' => [
+        ['createOnly' => true, 'req' => true] + $T('key', 'Name (must start with qr_, e.g. qr_aba)', true), ['list' => true] + $IMGS('value', 'QR picture', null, true)]],
       'users' => ['title' => 'Users', 'group' => 'People', 'table' => 'users', 'noCreate' => true, 'desc' => true, 'fields' => [
         $T('name', 'Name', true), $T('email', 'Email', true), $T('phone', 'Phone'), $N('total_spent', 'Total spent (USD) → sets loyalty level', true), $N('points_balance', 'Coins (points)', true)]],
       'loyalty' => ['title' => 'Loyalty levels', 'group' => 'Settings', 'table' => 'loyalty_levels', 'pk' => 'level', 'fields' => [
         ['createOnly' => true] + $N('level', 'Level', true), $N('min_spent', 'Min spent (USD)', true), $N('discount_pct', 'Discount %', true)]],
-      'settings' => ['title' => 'Site settings', 'group' => 'Settings', 'table' => 'app_settings', 'pk' => 'key', 'fields' => [
+      'settings' => ['title' => 'Site settings', 'group' => 'Settings', 'table' => 'app_settings', 'pk' => 'key', 'where' => "key not like 'qr\\_%'", 'fields' => [
         ['createOnly' => true] + $T('key', 'Key', true), $T('value', 'Value', true)]],
     ];
     // required fields (marked * in the form and checked before saving)
